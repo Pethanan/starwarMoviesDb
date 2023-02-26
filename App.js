@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import InputForm from "./InputForm";
 
 import MoviesList from "./components/MoviesList";
 import "./App.css";
@@ -7,6 +8,11 @@ function App() {
   const [moviesList, setMoviesList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isNewMovieAddBtnClicked, setIsNewMovieAddBtnClicked] = useState(false);
+
+  const newMovieBtnHandler = () => {
+    setIsNewMovieAddBtnClicked(!isNewMovieAddBtnClicked);
+  };
 
   const fetchMovieHandler = useCallback(async () => {
     setError(null);
@@ -43,6 +49,12 @@ function App() {
   }, [fetchMovieHandler]);
   return (
     <React.Fragment>
+      <section>
+        <button type="button" onClick={newMovieBtnHandler}>
+          Add a new movie
+        </button>
+        {isNewMovieAddBtnClicked && <InputForm></InputForm>}
+      </section>
       <section>
         <button onClick={fetchMovieHandler}>Fetch Movies</button>
       </section>
