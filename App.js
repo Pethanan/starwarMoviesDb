@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import InputForm from "./InputForm";
+import NewMovieInputForm from "./NewMovieInputForm";
 
 import MoviesList from "./components/MoviesList";
 import "./App.css";
@@ -13,13 +13,38 @@ function App() {
   const newMovieBtnHandler = () => {
     setIsNewMovieAddBtnClicked(!isNewMovieAddBtnClicked);
   };
+  const deleteMovieHndler = async (id) => {
+    await fetch(
+      `https://starwar-movies-db-default-rtdb.firebaseio.com/movies/${id}.json`,
+      {
+        method: "DELETE",
+      }
+    );
+  };
+  const addMovieHandler = async (movie) => {
+    console.log(movie);
+    const response = await fetch(
+      "https://starwar-movies-db-default-rtdb.firebaseio.com/movies.json",
+      {
+        method: "POST",
+        body: JSON.stringify(movie),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const data = await response.json();
+    console.log(data);
+  };
 
   const fetchMovieHandler = useCallback(async () => {
     setError(null);
     setIsLoading(true);
 
     try {
-      const fetchedMoviesJSON = await fetch("https://swapi.dev/api/films");
+      const fetchedMoviesJSON = await fetch(
+        "https://starwar-movies-db-default-rtdb.firebaseio.com/movies.json"
+      );
       if (!fetchedMoviesJSON.ok) {
         throw new Error("Something went wrong...Retrying");
       }
@@ -27,17 +52,18 @@ function App() {
       const fetchedMovies = await fetchedMoviesJSON.json();
       console.log(fetchedMovies);
 
-      const tranformMAviesDataResults = fetchedMovies.results.map(
-        (movieData) => {
-          return {
-            id: movieData.episode_id,
-            title: movieData.title,
-            openingText: movieData.opening_crawl,
-            releaseDate: movieData.releaseDate,
-          };
-        }
-      );
-      setMoviesList(tranformMAviesDataResults);
+      let loadedMovies = [];
+
+      for (const key in fetchedMovies) {
+        loadedMovies.push({
+          id: key,
+          title: fetchedMovies[key].title,
+          openingText: fetchedMovies[key].openingText,
+          movieDate: fetchedMovies[key].movieDate,
+        });
+      }
+
+      setMoviesList(loadedMovies);
     } catch (error) {
       setError(error.message);
     }
@@ -53,14 +79,22 @@ function App() {
         <button type="button" onClick={newMovieBtnHandler}>
           Add a new movie
         </button>
-        {isNewMovieAddBtnClicked && <InputForm></InputForm>}
+        {isNewMovieAddBtnClicked && (
+          <NewMovieInputForm
+            onAddMovieHandler={addMovieHandler}
+            addMovieHandler={addMovieHandler}
+          ></NewMovieInputForm>
+        )}
       </section>
       <section>
         <button onClick={fetchMovieHandler}>Fetch Movies</button>
       </section>
       <section>
         {!isLoading && moviesList.length > 0 && (
-          <MoviesList movies={moviesList} />
+          <MoviesList
+            movies={moviesList}
+            deleteMovieHndler={deleteMovieHndler}
+          />
         )}
         {!isLoading && error && <p>{error}</p>}
         {isLoading && <p>...Loading</p>}
