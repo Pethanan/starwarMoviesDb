@@ -13,14 +13,7 @@ function App() {
   const newMovieBtnHandler = () => {
     setIsNewMovieAddBtnClicked(!isNewMovieAddBtnClicked);
   };
-  const deleteMovieHndler = async (id) => {
-    await fetch(
-      `https://starwar-movies-db-default-rtdb.firebaseio.com/movies/${id}.json`,
-      {
-        method: "DELETE",
-      }
-    );
-  };
+
   const addMovieHandler = async (movie) => {
     console.log(movie);
     const response = await fetch(
@@ -69,6 +62,16 @@ function App() {
     }
     setIsLoading(false);
   }, []);
+
+  const deleteMovieHndler = async (id) => {
+    await fetch(
+      `https://starwar-movies-db-default-rtdb.firebaseio.com/movies/${id}.json`,
+      {
+        method: "DELETE",
+      }
+    );
+    fetchMovieHandler();
+  };
 
   useEffect(() => {
     fetchMovieHandler();
